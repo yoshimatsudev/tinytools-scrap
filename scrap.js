@@ -1,47 +1,43 @@
-// puppeteer-extra is a drop-in replacement for puppeteer,
-// it augments the installed puppeteer with plugin functionality
+
 const puppeteer = require('puppeteer-extra')
 const cron = require('node-cron')
-const locateChrome = require('locate-chrome')
 
-// add stealth plugin and use defaults (all evasion techniques)
-const StealthPlugin = require('puppeteer-extra-plugin-stealth')
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const { timeout } = require('puppeteer');
+// const { Dialog } = require('puppeteer')
 puppeteer.use(StealthPlugin())
-
-console.log('starting nodejs script')
-
 
 async function getInvoices() {
     try {
-        // const executablePath = await new Promise(resolve => locateChrome((arg) => resolve(arg))) || '';
 
-        const browser = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome', headless: 'new', args: ['--no-sandbox'] });
+        const browser = await puppeteer.launch({ headless: false, args: ['--no-sandbox'] });
         const page = await browser.newPage();
+        page.on('dialog', dialog => {
+            dialog.dismiss()
+        })
 
         await page.goto('https://erp.tiny.com.br/')
-        await page.waitForTimeout(500)
-        await page.type('input[name=username]', process.env.USERNAME);
-        await page.waitForTimeout(500)
-        await page.type('input[name=password]', process.env.PASSWORD);
-        await page.waitForTimeout(500)
-        await page.click('html > body > div > div:nth-of-type(2) > div > div > react-login > div > div > div:first-of-type > div:first-of-type > div:first-of-type > form > div:nth-of-type(3) > button');
 
-        await page.waitForSelector('.modal-footer > button:nth-of-type(1)')
-        await page.waitForTimeout(500);
+        await page.locator('input[name=username]').fill(process.env.USERNAME)
+        await page.locator('input[name=password]').fill(process.env.PASSWORD);
+        await page.locator('html > body > div > div:nth-of-type(2) > div > div > react-login > div > div > div:first-of-type > div:first-of-type > div:first-of-type > form > div:nth-of-type(3) > button').click()
 
-        await page.click('.modal-footer > button:nth-of-type(1)');
+        try { 
+            await page.locator('#bs-modal-ui-popup > div > div > div > div.modal-footer > button.btn.btn-primary').click() 
+            console.log('clicked')
+        } catch (e) {
+            console.log(e)
+            console.log('error')
+        }
 
-        await page.waitForSelector('div[id=main-menu]');
-
+        await page.locator('#widgets-home > div > div:nth-child(1) > div.banner-olist-tiny > div > div.left > span > img').wait()
         await page.goto('https://erp.tiny.com.br/notas_fiscais#list');
 
-        await page.waitForSelector('#sit-P');
-        await page.waitForTimeout(2000);
-        await page.$eval('#sit-P', el => el.click());
-        // await page.waitForTimeout(5000)
+    
 
+        await page.locator('#sit-P').click();
 
-        await page.waitForSelector(`tr[idnota]`)
+        await page.locator('tr[idnota]').wait()
 
         const tableData = await page.$$eval('tr[idnota]', (rows, atr) => {
             return rows.map(row => {
