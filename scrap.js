@@ -10,7 +10,7 @@ puppeteer.use(StealthPlugin())
 async function getInvoices() {
     try {
 
-        const browser = await puppeteer.launch({ headless: false, args: ['--no-sandbox'] });
+        const browser = await puppeteer.launch({ executablePath: '/usr/bin/google-chrome', headless: 'new', args: ['--no-sandbox'] });
         const page = await browser.newPage();
         page.on('dialog', dialog => {
             dialog.dismiss()
