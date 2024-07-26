@@ -48,9 +48,9 @@ async function getInvoices() {
                 return { id: invoiceId, store: storeData }
             });
         }, 'idnota');
-
+        
         await browser.close()
-        return tableData
+        return await tableData
     } catch (e) {
         throw new Error(e)
     }
@@ -66,23 +66,13 @@ const storeEnum = {
 
 
 async function sendInvoices(invoices) {
+    console.log('starting sending invoices')
     for (const invoice of invoices) {
         await fetch(`${process.env.API_URL}${invoice.id}&store=${storeEnum[invoice.store]}`)
             .then((res) => {
-                if (res.ok) {
-                    console.log(`sent invoice ${invoice.id}, status: `, res.status)
-                }
-
-                if (res.status === 401) {
-                    console.log('already processed')
-                }
-
-                if (res.status === 404) {
-                    throw new Error('unavailable resource')
-                }
+                console.log('Invoice: ', invoice, 'Status: ', res.status)
             })
             .catch((err) => {
-                console.log('here');
                 throw new Error('Error on invoice ' + err)
             })
     }
