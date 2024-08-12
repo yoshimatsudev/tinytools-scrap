@@ -30,10 +30,8 @@ async function getInvoices() {
             console.log('error')
         }
 
-        await page.locator('#widgets-home > div > div:nth-child(1) > div.banner-olist-tiny > div > div.left > span > img').wait()
+        await page.locator('#widgets-home > div > div:nth-child(1) > div.banner-olist-tiny > div > div.left > span > img')
         await page.goto('https://erp.tiny.com.br/notas_fiscais#list');
-
-    
 
         await page.locator('#sit-P').click();
 
@@ -43,7 +41,6 @@ async function getInvoices() {
             return rows.map(row => {
                 let storeData = row.querySelector('.badge-ecommerce > img').getAttribute('alt')
                 let invoiceId = row.getAttribute(atr)
-
 
                 return { id: invoiceId, store: storeData }
             });
