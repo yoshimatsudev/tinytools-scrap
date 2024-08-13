@@ -3,8 +3,6 @@ const puppeteer = require('puppeteer-extra')
 const cron = require('node-cron')
 
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
-const { timeout } = require('puppeteer');
-// const { Dialog } = require('puppeteer')
 puppeteer.use(StealthPlugin())
 
 async function getInvoices() {
@@ -24,7 +22,9 @@ async function getInvoices() {
 
         try { 
             await page.locator('#bs-modal-ui-popup > div > div > div > div.modal-footer > button.btn.btn-primary').click() 
-            console.log('clicked')
+            const test = await page.waitForNavigation({
+                waitUntil: 'networkidle0'
+            })
         } catch (e) {
             console.log(e)
             console.log('error')
@@ -33,16 +33,22 @@ async function getInvoices() {
         await page.locator('#widgets-home > div > div:nth-child(1) > div.banner-olist-tiny > div > div.left > span > img')
         await page.goto('https://erp.tiny.com.br/notas_fiscais#list');
 
+        await page.locator('#page-wrapper > div.panel.panel-list > div.panel-head.page-head > div.top-bar > div > a').wait()
+
         await page.locator('#sit-P').click();
 
         await page.locator('tr[idnota]').wait()
 
         const tableData = await page.$$eval('tr[idnota]', (rows, atr) => {
             return rows.map(row => {
-                let storeData = row.querySelector('.badge-ecommerce > img').getAttribute('alt')
+                let storeData = row.querySelector('.badge-ecommerce > img')
                 let invoiceId = row.getAttribute(atr)
 
-                return { id: invoiceId, store: storeData }
+                if (storeData) {
+                    return { id: invoiceId, store: storeData.getAttribute('alt')}
+                }
+
+                return { id: invoiceId, store: '' }
             });
         }, 'idnota');
         
