@@ -16,10 +16,12 @@ async function getInvoices() {
 
         await page.goto('https://erp.tiny.com.br/')
 
-        await page.locator('input[name=username]').fill(process.env.USERNAME)
-        await page.locator('input[name=password]').fill(process.env.PASSWORD);
-        await page.locator('html > body > div > div:nth-of-type(2) > div > div > react-login > div > div > div:first-of-type > div:first-of-type > div:first-of-type > form > div:nth-of-type(3) > button').click()
+        await page.type('input[name=username]', process.env.USERNAME);
 
+        await page.click('#input-wrapper > button')
+
+        await page.type('input[name=password]', process.env.PASSWORD);
+        await page.click('#input-wrapper > button');
         try { 
             await page.locator('#bs-modal-ui-popup > div > div > div > div.modal-footer > button.btn.btn-primary').click() 
             const test = await page.waitForNavigation({
